@@ -183,12 +183,12 @@ def main(argv: list[str] | None = None) -> int:
 
     ap = argparse.ArgumentParser(description="SmartStore Reporting Layer MCP server")
     ap.add_argument("--config", help="path to config.yaml")
-    ap.add_argument(
-        "--transport",
-        choices=["stdio", "http"],
-        default="stdio",
-        help="stdio for Claude Desktop / Cursor; http for a remote connector",
-    )
+    # ap.add_argument(
+    #     "--transport",
+    #     choices=["stdio", "http"],
+    #     default="stdio",
+    #     help="stdio for Claude Desktop / Cursor; http for a remote connector",
+    # )
     args = ap.parse_args(argv)
 
     _cfg = load_config(args.config)
@@ -201,12 +201,22 @@ def main(argv: list[str] | None = None) -> int:
         log.error("Cannot reach the database: %s", exc)
         return 2
 
+    #new added
+    port_env = os.environ.get("PORT")
+
     try:
-        if args.transport == "http":
-            mcp.settings.host = _cfg.http_host
-            mcp.settings.port = _cfg.http_port
-            log.info("Serving on http://%s:%d/mcp", _cfg.http_host, _cfg.http_port)
-            mcp.run(transport="streamable-http")
+        if port_env:
+            # ক্লাউড এনভায়রনমেন্টে (MCPize / Cloud Run) SSE মোডে চলবে
+            port = int(port_env)
+            log.info("Serving SSE on http://0.0.0.0:%d", port)
+            mcp.run(transport="sse", host="0.0.0.0", port=port)
+        #if args.transport == "http":
+           # mcp.settings.host = _cfg.http_host
+            #mcp.settings.port = _cfg.http_port
+            #log.info("Serving on http://%s:%d/mcp", _cfg.http_host, _cfg.http_port)
+            #mcp.run(transport="streamable-http")
+
+       
         else:
             mcp.run(transport="stdio")
     finally:
