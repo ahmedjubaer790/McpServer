@@ -1,8 +1,8 @@
 oracle:
   user: "claude_ro"
   password: "CLAUDE_RO"
-  #dsn: "localhost:1521/FREEPDB1"
-  dsn: "lwmojs-27-147-237-27.run.pinggy-free.link:45301/FREEPDB1"
+  dsn: "localhost:1521/FREEPDB1"
+  #dsn: "lwmojs-27-147-237-27.run.pinggy-free.link:45301/FREEPDB1"
   pool_min: 1
   pool_max: 4
   pool_timeout: 60
