@@ -227,7 +227,37 @@ def run_query(sql: str) -> str:
 # if __name__ == "__main__":
 #     raise SystemExit(main())
 
-# ---------------------------------------------------------------- entry
+# # ---------------------------------------------------------------- entry
+# def main(argv: list[str] | None = None) -> int:
+#     global _cfg
+
+#     ap = argparse.ArgumentParser(description="SmartStore Reporting Layer MCP server")
+#     ap.add_argument("--config", help="path to config.yaml")
+#     args, _ = ap.parse_known_args(argv)
+
+#     _cfg = load_config(args.config)
+#     db.init(_cfg)
+
+#     try:
+#         db.ping()
+#         log.info("Database reachable. %d views whitelisted.", len(_cfg.allowed_views))
+#     except Exception as exc:
+#         log.warning("Database ping warning: %s (will retry on query)", exc)
+
+#     # MCPize ক্লাউড mcp-proxy দিয়ে STDIO তেই চলে
+#     try:
+#         log.info("Starting MCP Server on stdio...")
+#         mcp.run(transport="stdio")
+#     finally:
+#         db.close()
+
+#     return 0
+
+
+# if __name__ == "__main__":
+#     raise SystemExit(main())
+
+# ------------------------------3rd---------------------------------- entry
 def main(argv: list[str] | None = None) -> int:
     global _cfg
 
@@ -236,24 +266,22 @@ def main(argv: list[str] | None = None) -> int:
     args, _ = ap.parse_known_args(argv)
 
     _cfg = load_config(args.config)
-    db.init(_cfg)
+    db._cfg = _cfg
 
-    try:
-        db.ping()
-        log.info("Database reachable. %d views whitelisted.", len(_cfg.allowed_views))
-    except Exception as exc:
-        log.warning("Database ping warning: %s (will retry on query)", exc)
+    # Cloud Run / MCPize পরিবেশ চেক করা
+    port_env = os.environ.get("PORT")
 
-    # MCPize ক্লাউড mcp-proxy দিয়ে STDIO তেই চলে
-    try:
-        log.info("Starting MCP Server on stdio...")
+    if port_env:
+        port = int(port_env)
+        log.info("Starting FastMCP SSE Server on port %d...", port)
+        # ক্লাউডে এটি ০.০.০.০ এবং ৮০৮০ পোর্টে সরাসরি ওয়েব সার্ভার হিসেবে চলবে
+        mcp.run(transport="sse", host="0.0.0.0", port=port)
+    else:
+        log.info("Starting FastMCP on stdio...")
         mcp.run(transport="stdio")
-    finally:
-        db.close()
 
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
