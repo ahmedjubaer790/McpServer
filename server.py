@@ -199,7 +199,7 @@ def main(argv: list[str] | None = None) -> int:
         log.info("Database reachable. %d views whitelisted.", len(_cfg.allowed_views))
     except Exception as exc:
         log.error("Cannot reach the database: %s", exc)
-        return 2
+        #return 2
 
     #new added
     port_env = os.environ.get("PORT")
